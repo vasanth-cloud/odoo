@@ -1,127 +1,93 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Package } from "lucide-react";
-import { useToast } from "@/hooks/use-toast.js";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Login() {
-    const [, setLocation] = useLocation();
-    const { toast } = useToast();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
-        try {
-            const response = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
+    // Simulate login (replace with your API call)
+    setTimeout(() => {
+      if (email && password) {
+        console.log("Login successful:", { email, password });
+        // Save token or user data
+        localStorage.setItem("isLoggedIn", "true");
+        // Navigate to Dashboard
+        navigate("/dashboard");
+      } else {
+        setError("Invalid credentials");
+        setIsSubmitting(false);
+      }
+    }, 1000);
+  };
 
-            if (!response.ok) {
-                throw new Error("Invalid credentials");
-            }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
-            await response.json();
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="example@email.com"
+              required
+            />
+          </div>
 
-            toast({
-                title: "Login successful",
-                description: "Welcome back to StockMaster",
-            });
-            setLocation("/app/dashboard");
-        } catch (error) {
-            toast({
-                title: "Login failed",
-                description: "Invalid email or password",
-                variant: "destructive",
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+          <div>
+            <label className="block text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="Enter password"
+              required
+            />
+          </div>
 
-    return (
-        <div className="h-min-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-        <div className="max-w-lg w-full space-y-8">
-                {/* Logo */}
-                <div className="text-center space-y-2">
-                    <div className="flex justify-center">
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
 
-                    </div>
-                    <h1 className="text-3xl font-bold text-white">StockMaster</h1>
-                    <p className="text-slate-400">Inventory Control System</p>
-                </div>
-
-                {/* Login Card */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Welcome back</CardTitle>
-                        <CardDescription>Sign in to your account to continue</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="name@company.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    data-testid="input-email"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password">Password</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    data-testid="input-password"
-                                />
-                            </div>
-                            <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-submit">
-                                {isLoading ? "Signing in..." : "Sign in"}
-                            </Button>
-                        </form>
-
-                        <div className="mt-6 space-y-4 text-center text-sm">
-                            <Link href="/reset">
-                                <a className="text-primary hover:underline" data-testid="link-forgot-password">
-                                    Forgot password?
-                                </a>
-                            </Link>
-                            <div className="text-muted-foreground">
-                                Don't have an account?{" "}
-                                <Link href="/signup">
-                                    <a className="text-primary hover:underline" data-testid="link-signup">
-                                        Create account
-                                    </a>
-                                </Link>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <div className="text-center">
-                    <Link href="/">
-                        <a className="text-sm text-slate-400 hover:text-white" data-testid="link-back-home">
-                            ← Back to home
-                        </a>
-                    </Link>
-                </div>
+          {error && (
+            <div className="bg-red-50 text-red-700 p-3 rounded text-sm">
+              {error}
             </div>
-        </div>
-    );
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-blue-400"
+          >
+            {isSubmitting ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <p className="text-center text-gray-600 mt-4">
+          New user?{" "}
+          <Link to="/signup" className="text-blue-600 font-medium hover:underline">
+            Create an account
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 }
 
+export default Login;

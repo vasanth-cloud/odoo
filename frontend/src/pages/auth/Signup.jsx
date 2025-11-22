@@ -1,172 +1,128 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Signup() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("warehouse_staff");
-  const [isLoading, setIsLoading] = useState(false);
+function Signup() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (password !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match!");
       return;
     }
 
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
-      });
-      
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Signup failed");
-      }
-      
-      await response.json();
-      
-      toast({
-        title: "Account created",
-        description: "Welcome to StockMaster",
-      });
-      setLocation("/app/dashboard");
-    } catch (error) {
-      toast({
-        title: "Signup failed",
-        description: error.message || "Failed to create account",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters!");
+      return;
     }
+
+    setIsSubmitting(true);
+
+    // Simulate signup (replace with your API call)
+    setTimeout(() => {
+      console.log("Signup successful:", formData);
+      // Navigate to login page after successful signup
+      navigate("/");
+    }, 1000);
   };
 
-return (
-    <div className="h-min-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-        <div className="max-w-lg w-full space-y-8">
-            {/* Logo */}
-            <div className="text-center space-y-2">
-                <div className="flex justify-center">
-                    <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center">
-                        <Package className="h-8 w-8 text-primary-foreground" />
-                    </div>
-                </div>
-                <h1 className="text-3xl font-bold text-white">StockMaster</h1>
-                <p className="text-slate-400">Inventory Control System</p>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-2 text-center">Create Account</h2>
+        <p className="text-gray-500 text-center mb-6">Sign up to get started</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 mb-1">Full Name</label>
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="John Doe"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="example@email.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="Enter password"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-1">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="Re-enter password"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-50 text-red-700 p-3 rounded text-sm">
+              {error}
             </div>
+          )}
 
-            {/* Signup Card */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Create your account</CardTitle>
-                    <CardDescription>Get started with StockMaster today</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Full Name</Label>
-                            <Input
-                                id="name"
-                                type="text"
-                                placeholder="Enter your full name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                                data-testid="input-name"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                data-testid="input-email"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="role">Role</Label>
-                            <Select value={role} onValueChange={setRole}>
-                                <SelectTrigger data-testid="select-role">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="warehouse_staff">Warehouse Staff</SelectItem>
-                                    <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                data-testid="input-password"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Confirm Password</Label>
-                            <Input
-                                id="confirmPassword"
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                                data-testid="input-confirm-password"
-                            />
-                        </div>
-                        <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-submit">
-                            {isLoading ? "Creating account..." : "Create account"}
-                        </Button>
-                    </form>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-blue-400"
+          >
+            {isSubmitting ? "Signing up..." : "Sign Up"}
+          </button>
+        </form>
 
-                    <div className="mt-6 text-center text-sm text-muted-foreground">
-                        Already have an account?{" "}
-                        <Link href="/login">
-                            <a className="text-primary hover:underline" data-testid="link-login">
-                                Sign in
-                            </a>
-                        </Link>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="text-center">
-                <Link href="/">
-                    <a className="text-sm text-slate-400 hover:text-white" data-testid="link-back-home">
-                        ← Back to home
-                    </a>
-                </Link>
-            </div>
-        </div>
+        <p className="text-center text-gray-600 mt-4">
+          Already have an account?{" "}
+          <Link to="/" className="text-blue-600 font-medium hover:underline">
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
-);
+  );
 }
 
+export default Signup;
