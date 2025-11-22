@@ -5,57 +5,161 @@ function TransferDetails() {
   const { id } = useParams();
   const [transfer, setTransfer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const statusOptions = ["DRAFT", "PENDING", "IN_TRANSIT", "COMPLETED", "CANCELLED"];
 
   useEffect(() => {
     loadTransfer();
   }, [id]);
 
-  const loadTransfer = async () => {
-    try {
-      const response = await fetch(`http://your-backend-url/api/transfers/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+  const loadTransfer = () => {
+    setLoading(true);
+    
+    // Mock data based on ID
+    setTimeout(() => {
+      const mockTransfers = {
+        1: {
+          id: 1,
+          transferNumber: "TRF-023",
+          fromWarehouse: "Main Warehouse",
+          toWarehouse: "Warehouse 2",
+          status: "PENDING",
+          transferDate: "2025-11-22T10:30:00",
+          reason: "Rebalancing Stock",
+          initiatedBy: "Mike Johnson",
+          notes: "Urgent transfer requested due to high demand at Warehouse 2.",
+          items: [
+            { productId: 101, productName: "Steel Rods", sku: "STL-001", quantity: 50 },
+            { productId: 102, productName: "Wooden Planks", sku: "WD-002", quantity: 100 },
+            { productId: 103, productName: "Plastic Sheets", sku: "PLS-003", quantity: 75 },
+          ]
+        },
+        2: {
+          id: 2,
+          transferNumber: "TRF-024",
+          fromWarehouse: "Warehouse 2",
+          toWarehouse: "Main Warehouse",
+          status: "COMPLETED",
+          transferDate: "2025-11-21T14:00:00",
+          reason: "Customer Demand",
+          initiatedBy: "Sarah Wilson",
+          notes: "Completed transfer with all items accounted for.",
+          items: [
+            { productId: 201, productName: "LED Monitor 27\"", sku: "MON-027", quantity: 10 },
+            { productId: 202, productName: "Wireless Keyboard", sku: "KB-WL-001", quantity: 15 },
+            { productId: 203, productName: "Optical Mouse", sku: "MS-OPT-002", quantity: 20 },
+          ]
+        },
+        3: {
+          id: 3,
+          transferNumber: "TRF-025",
+          fromWarehouse: "Main Warehouse",
+          toWarehouse: "Warehouse 3",
+          status: "IN_TRANSIT",
+          transferDate: "2025-11-20T09:00:00",
+          reason: "Overstocked",
+          initiatedBy: "John Doe",
+          notes: "Items are currently in transit. Expected arrival today.",
+          items: [
+            { productId: 301, productName: "Office Chair", sku: "CHR-101", quantity: 25 },
+            { productId: 302, productName: "Desk Lamp", sku: "LMP-045", quantity: 30 },
+          ]
+        },
+        4: {
+          id: 4,
+          transferNumber: "TRF-026",
+          fromWarehouse: "Warehouse 3",
+          toWarehouse: "Warehouse 2",
+          status: "DRAFT",
+          transferDate: "2025-11-19T11:00:00",
+          reason: "Low Stock",
+          initiatedBy: "Jane Smith",
+          notes: "Draft transfer pending approval.",
+          items: [
+            { productId: 401, productName: "Filing Cabinet", sku: "CAB-089", quantity: 12 },
+          ]
         }
-      });
+      };
 
-      if (response.ok) {
-        const data = await response.json();
-        setTransfer(data);
-      }
-    } catch (error) {
-      console.error("Error loading transfer:", error);
-    } finally {
+      const foundTransfer = mockTransfers[id];
+      setTransfer(foundTransfer || null);
       setLoading(false);
+    }, 800);
+  };
+
+  const updateStatus = async (newStatus) => {
+    if (!window.confirm(`Change status to ${newStatus}?`)) return;
+
+    setUpdatingStatus(true);
+    try {
+      setTimeout(() => {
+        setTransfer({ ...transfer, status: newStatus });
+        setUpdatingStatus(false);
+        alert("Status updated successfully!");
+      }, 1000);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Error updating status");
+      setUpdatingStatus(false);
     }
   };
 
   const getStatusColor = (status) => {
     const colors = {
-      "DRAFT": "bg-gray-100 text-gray-800",
-      "PENDING": "bg-yellow-100 text-yellow-800",
-      "APPROVED": "bg-blue-100 text-blue-800",
-      "IN_TRANSIT": "bg-purple-100 text-purple-800",
-      "COMPLETED": "bg-green-100 text-green-800",
-      "CANCELLED": "bg-red-100 text-red-800",
+      "DRAFT": "bg-slate-100 text-slate-700 border-slate-200",
+      "PENDING": "bg-amber-100 text-amber-700 border-amber-200",
+      "IN_TRANSIT": "bg-blue-100 text-blue-700 border-blue-200",
+      "COMPLETED": "bg-emerald-100 text-emerald-700 border-emerald-200",
+      "CANCELLED": "bg-rose-100 text-rose-700 border-rose-200",
     };
-    return colors[status] || "bg-gray-100 text-gray-800";
+    return colors[status] || "bg-slate-100 text-slate-700 border-slate-200";
+  };
+
+  const getStatusIcon = (status) => {
+    const icons = {
+      "DRAFT": "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
+      "PENDING": "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+      "IN_TRANSIT": "M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0",
+      "COMPLETED": "M5 13l4 4L19 7",
+      "CANCELLED": "M6 18L18 6M6 6l12 12",
+    };
+    return icons[status] || icons.DRAFT;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading transfer...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-4 border-slate-200 mx-auto"></div>
+            <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-indigo-600 absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+          </div>
+          <p className="mt-6 text-slate-700 font-semibold animate-pulse">Loading transfer details...</p>
+        </div>
       </div>
     );
   }
 
   if (!transfer) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Transfer not found</p>
-          <Link to="/transfers" className="text-blue-600 hover:underline">
-            Back to Transfers
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center bg-white rounded-2xl shadow-lg p-12">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Transfer Not Found</h2>
+          <p className="text-slate-600 mb-6">The transfer you're looking for doesn't exist.</p>
+          <Link 
+            to="/transfers" 
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Transfers</span>
           </Link>
         </div>
       </div>
@@ -63,74 +167,267 @@ function TransferDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold">Transfer Details</h1>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/transfers" 
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+              >
+                <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">Transfer Details</h1>
+                <p className="text-sm text-slate-600">View and manage transfer information</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 font-medium flex items-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                <span>Print</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow p-6 space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-start border-b pb-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">{transfer.transferNumber}</h2>
-              <p className="text-gray-600 mt-1">
-                <span className="font-semibold">{transfer.fromLocation}</span> 
-                <span className="mx-2">→</span> 
-                <span className="font-semibold">{transfer.toLocation}</span>
-              </p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Transfer Header Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold">{transfer.transferNumber}</h2>
+                    <p className="text-indigo-100 text-sm mt-1">Internal Transfer</p>
+                  </div>
+                </div>
+              </div>
+              <div className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 ${getStatusColor(transfer.status)} bg-white font-semibold`}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={getStatusIcon(transfer.status)} />
+                </svg>
+                <span>{transfer.status.replace('_', ' ')}</span>
+              </div>
             </div>
-            <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(transfer.status)}`}>
-              {transfer.status}
-            </span>
           </div>
 
-          {/* Transfer Information */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-500 text-sm">Transfer Date</p>
-              <p className="font-semibold">{new Date(transfer.transferDate).toLocaleString()}</p>
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* From Warehouse */}
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium uppercase">From Warehouse</p>
+                    <p className="text-slate-800 font-semibold mt-1 text-lg">{transfer.fromWarehouse}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium uppercase">Transfer Date</p>
+                    <p className="text-slate-800 font-semibold mt-1">
+                      {new Date(transfer.transferDate).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {new Date(transfer.transferDate).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* To Warehouse */}
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium uppercase">To Warehouse</p>
+                    <p className="text-slate-800 font-semibold mt-1 text-lg">{transfer.toWarehouse}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium uppercase">Initiated By</p>
+                    <p className="text-slate-800 font-semibold mt-1">{transfer.initiatedBy}</p>
+                  </div>
+                </div>
+
+                {transfer.reason && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-medium uppercase">Reason</p>
+                      <p className="text-slate-800 font-semibold mt-1">{transfer.reason}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div>
-              <p className="text-gray-500 text-sm">Total Items</p>
-              <p className="font-semibold">{transfer.items?.length || 0} products</p>
+          </div>
+        </div>
+
+        {/* Items Table */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-100">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Transfer Items</h3>
+                <p className="text-sm text-slate-600">{transfer.items?.length || 0} items in this transfer</p>
+              </div>
             </div>
           </div>
 
-          {/* Items Table */}
-          <div>
-            <h3 className="font-semibold text-lg mb-3">Items Transferred</h3>
-            <table className="w-full border">
-              <thead className="bg-gray-50">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm">Product ID</th>
-                  <th className="px-4 py-2 text-right text-sm">Quantity</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Product</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">SKU</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Quantity</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {transfer.items && transfer.items.map((item, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="px-4 py-2">Product #{item.productId}</td>
-                    <td className="px-4 py-2 text-right font-semibold">{item.quantity}</td>
+                  <tr key={index} className="hover:bg-slate-50 transition-colors duration-150">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-sm">
+                          {item.productId}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800">{item.productName}</p>
+                          <p className="text-xs text-slate-500">ID: {item.productId}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-sm font-mono">
+                        {item.sku}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="font-semibold text-slate-800 text-lg">{item.quantity}</span>
+                      <span className="text-slate-500 text-sm ml-1">units</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Status Update & Notes */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Status Update */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <div className="flex items-start space-x-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Update Status</h3>
+                <p className="text-sm text-slate-600">Change transfer status</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {statusOptions.map(status => (
+                <button
+                  key={status}
+                  onClick={() => updateStatus(status)}
+                  disabled={updatingStatus || transfer.status === status}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                    transfer.status === status
+                      ? `${getStatusColor(status)} border-2 cursor-not-allowed opacity-60`
+                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-2 border-transparent hover:border-indigo-200'
+                  }`}
+                >
+                  <span className="flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={getStatusIcon(status)} />
+                    </svg>
+                    <span>{status.replace('_', ' ')}</span>
+                  </span>
+                  {transfer.status === status && (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Notes */}
           {transfer.notes && (
-            <div>
-              <p className="text-gray-500 text-sm mb-1">Notes</p>
-              <p className="text-gray-700">{transfer.notes}</p>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Transfer Notes</h3>
+                  <p className="text-sm text-slate-600">Additional information</p>
+                </div>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p className="text-slate-700 leading-relaxed">{transfer.notes}</p>
+              </div>
             </div>
           )}
-
-          <Link to="/transfers" className="inline-block bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">
-            Back to Transfers
-          </Link>
         </div>
       </div>
     </div>
