@@ -42,6 +42,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/receipts/**").hasAnyRole("MANAGER","STAFF")
                         .requestMatchers("/api/delivery/**").hasAnyRole("MANAGER", "STAFF")
                         .requestMatchers("/api/adjustments/**").hasAnyRole("MANAGER","STAFF")
+                        .requestMatchers("/api/transfers/**").hasAnyRole("MANAGER", "STAFF")
+
 
 
 
