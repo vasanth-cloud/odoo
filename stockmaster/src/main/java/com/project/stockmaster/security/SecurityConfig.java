@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/delivery/**").hasAnyRole("MANAGER", "STAFF")
                         .requestMatchers("/api/adjustments/**").hasAnyRole("MANAGER","STAFF")
                         .requestMatchers("/api/transfers/**").hasAnyRole("MANAGER", "STAFF")
+                        .requestMatchers("/api/dashboard/**").hasAnyRole("MANAGER", "ADMIN")
+
 
 
 
