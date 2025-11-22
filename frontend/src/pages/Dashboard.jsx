@@ -1,31 +1,33 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+"use client"
+
+import { useState, useEffect } from "react"
+import { useNavigate, Link } from "react-router-dom"
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
-  
-  // State for dashboard data
+  const navigate = useNavigate()
+  const [activeFilter, setActiveFilter] = useState("all")
+  const [loading, setLoading] = useState(true)
+
   const [kpiData, setKpiData] = useState({
     totalProducts: 0,
     lowStock: 0,
     outOfStock: 0,
     pendingReceipts: 0,
     pendingDeliveries: 0,
-    internalTransfers: 0
-  });
+    internalTransfers: 0,
+    totalValue: 0,
+    weeklyChange: 0,
+  })
 
-  const [recentActivities, setRecentActivities] = useState([]);
-  const [lowStockProducts, setLowStockProducts] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([])
+  const [lowStockProducts, setLowStockProducts] = useState([])
 
-  // Fetch dashboard data on component mount
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    fetchDashboardData()
+  }, [])
 
   const fetchDashboardData = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       setTimeout(() => {
         setKpiData({
@@ -34,345 +36,601 @@ function Dashboard() {
           outOfStock: 3,
           pendingReceipts: 8,
           pendingDeliveries: 15,
-          internalTransfers: 5
-        });
+          internalTransfers: 5,
+          totalValue: 245680,
+          weeklyChange: 12.5,
+        })
 
         setRecentActivities([
-          { id: 1, type: "Receipt", doc: "RCP-001", status: "Done", date: "2025-11-22", warehouse: "Main Warehouse" },
-          { id: 2, type: "Delivery", doc: "DEL-045", status: "Ready", date: "2025-11-22", warehouse: "Main Warehouse" },
-          { id: 3, type: "Internal Transfer", doc: "TRF-023", status: "Waiting", date: "2025-11-21", warehouse: "Warehouse 2" },
-          { id: 4, type: "Adjustment", doc: "ADJ-012", status: "Done", date: "2025-11-21", warehouse: "Main Warehouse" },
-        ]);
+          {
+            id: 1,
+            type: "Receipt",
+            doc: "RCP-001",
+            status: "Done",
+            date: "2025-11-22",
+            warehouse: "Main Warehouse",
+            user: "John Doe",
+          },
+          {
+            id: 2,
+            type: "Delivery",
+            doc: "DEL-045",
+            status: "Ready",
+            date: "2025-11-22",
+            warehouse: "Main Warehouse",
+            user: "Jane Smith",
+          },
+          {
+            id: 3,
+            type: "Internal Transfer",
+            doc: "TRF-023",
+            status: "Waiting",
+            date: "2025-11-21",
+            warehouse: "Warehouse 2",
+            user: "Mike Johnson",
+          },
+          {
+            id: 4,
+            type: "Adjustment",
+            doc: "ADJ-012",
+            status: "Done",
+            date: "2025-11-21",
+            warehouse: "Main Warehouse",
+            user: "Sarah Wilson",
+          },
+        ])
 
         setLowStockProducts([
-          { id: 1, name: "Steel Rods", sku: "STL-001", stock: 5, reorderPoint: 20, category: "Raw Materials" },
-          { id: 2, name: "Wooden Chairs", sku: "CHR-101", stock: 8, reorderPoint: 15, category: "Finished Goods" },
-          { id: 3, name: "Plastic Sheets", sku: "PLS-045", stock: 3, reorderPoint: 10, category: "Raw Materials" },
-        ]);
+          {
+            id: 1,
+            name: "Steel Rods",
+            sku: "STL-001",
+            stock: 5,
+            reorderPoint: 20,
+            category: "Raw Materials",
+            trend: "down",
+          },
+          {
+            id: 2,
+            name: "Wooden Chairs",
+            sku: "CHR-101",
+            stock: 8,
+            reorderPoint: 15,
+            category: "Finished Goods",
+            trend: "down",
+          },
+          {
+            id: 3,
+            name: "Plastic Sheets",
+            sku: "PLS-045",
+            stock: 3,
+            reorderPoint: 10,
+            category: "Raw Materials",
+            trend: "critical",
+          },
+        ])
 
-        setLoading(false);
-      }, 1000);
-
+        setLoading(false)
+      }, 1000)
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      setLoading(false);
+      console.error("Error fetching dashboard data:", error)
+      setLoading(false)
     }
-  };
+  }
 
   const handleRefresh = () => {
-    fetchDashboardData();
-  };
+    fetchDashboardData()
+  }
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    navigate("/");
-  };
+    localStorage.removeItem("isLoggedIn")
+    navigate("/login")
+  }
 
   const getStatusColor = (status) => {
     const colors = {
-      "Done": "bg-green-100 text-green-800",
-      "Ready": "bg-blue-100 text-blue-800",
-      "Waiting": "bg-yellow-100 text-yellow-800",
-      "Draft": "bg-gray-100 text-gray-800",
-      "Canceled": "bg-red-100 text-red-800"
-    };
-    return colors[status] || "bg-gray-100 text-gray-800";
-  };
+      Done: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      Ready: "bg-blue-100 text-blue-700 border-blue-200",
+      Waiting: "bg-amber-100 text-amber-700 border-amber-200",
+      Draft: "bg-slate-100 text-slate-700 border-slate-200",
+      Canceled: "bg-rose-100 text-rose-700 border-rose-200",
+    }
+    return colors[status] || "bg-slate-100 text-slate-700 border-slate-200"
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-t-4 border-blue-600 mx-auto"></div>
-          <p className="mt-6 text-gray-700 font-semibold animate-pulse">Loading dashboard...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-4 border-slate-200 mx-auto"></div>
+            <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-blue-600 absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+          </div>
+          <p className="mt-6 text-slate-700 font-semibold animate-pulse">Loading your dashboard...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-      </div>
-
-      {/* Header/Navbar */}
-      <nav className="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 sticky top-0 z-50 transition-all duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Modern Navbar */}
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm hover:shadow-md transition-shadow duration-300">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-8">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
-                StockMaster
-              </h1>
-              <div className="hidden md:flex space-x-6">
-                <Link to="/dashboard" className="text-blue-600 font-semibold hover:text-blue-700 transition-colors duration-200 relative group">
+              <Link to="/dashboard" className="flex items-center space-x-3 group">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-125 group-hover:shadow-lg transition-all duration-300">
+                  <svg
+                    className="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                    />
+                  </svg>
+                </div>
+                <span className="text-xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors duration-200">
+                  StockMaster
+                </span>
+              </Link>
+
+              <div className="hidden lg:flex items-center space-x-1">
+                <Link
+                  to="/dashboard"
+                  className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200"
+                >
                   Dashboard
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-                <Link to="/products" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 relative group">
+                <Link
+                  to="/products"
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-all duration-200"
+                >
                   Products
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-                <Link to="/receipts" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 relative group">
+                <Link
+                  to="/receipts"
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-all duration-200"
+                >
                   Receipts
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-                <Link to="/deliveries" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 relative group">
+                <Link
+                  to="/deliveries"
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-all duration-200"
+                >
                   Deliveries
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-                <Link to="/transfers" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 relative group">
+                <Link
+                  to="/transfers"
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-all duration-200"
+                >
                   Transfers
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
-                </Link>
-                <Link to="/adjustments" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 relative group">
-                  Adjustments
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                 </Link>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              {/* Refresh Button */}
+
+            <div className="flex items-center space-x-3">
               <button
                 onClick={handleRefresh}
-                className="text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 hover:rotate-180 transition-all duration-500 ease-in-out"
-                title="Refresh Dashboard"
+                className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-300 group hover:scale-110"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <svg
+                  className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
                 </svg>
               </button>
-              
-              <Link to="/settings" className="text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-all duration-300 hover:scale-110">
-                <svg className="w-6 h-6 hover:rotate-90 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+
+              <button className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 relative hover:scale-110 group">
+                <svg
+                  className="w-5 h-5 group-hover:animate-bounce"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
                 </svg>
-              </Link>
-              <Link to="/profile" className="text-gray-600 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-all duration-300 hover:scale-110">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 hover:shadow-lg hover:scale-105 transition-all duration-300"
-              >
-                Logout
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
               </button>
+
+              <div className="flex items-center space-x-3 pl-3 border-l border-slate-200">
+                <Link
+                  to="/profile"
+                  className="flex items-center space-x-2 hover:bg-slate-100 rounded-lg p-2 transition-all duration-200 hover:scale-105"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm hover:shadow-md transition-shadow duration-200">
+                    JD
+                  </div>
+                  <span className="text-sm font-medium text-slate-700 hidden md:block">John Doe</span>
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-rose-600 rounded-lg hover:from-red-600 hover:to-rose-700 hover:shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-6 relative z-10">
-        {/* Welcome Section */}
-        <div className="mb-6 animate-fade-in">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Inventory Dashboard</h2>
-          <p className="text-gray-600">Welcome back! Here's your inventory overview.</p>
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Welcome Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">Welcome back, John! 👋</h1>
+            <p className="text-slate-600 mt-1">Here's what's happening with your warehouse today.</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Link
+              to="/receipts/create"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center space-x-2 group"
+            >
+              <svg
+                className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span>New Receipt</span>
+            </Link>
+          </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Total Products */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 border-l-4 border-blue-500 hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-500 text-sm font-semibold uppercase">Total Products</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2 group-hover:text-blue-600 transition-colors duration-300">{kpiData.totalProducts}</p>
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:scale-105 hover:border-blue-200 transition-all duration-300 border border-slate-100 cursor-pointer group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                <svg
+                  className="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 group-hover:scale-110 transition-all duration-300">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full group-hover:bg-emerald-100 transition-colors duration-200">
+                +{kpiData.weeklyChange}%
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors duration-200">
+              {kpiData.totalProducts}
+            </h3>
+            <p className="text-sm text-slate-600 mt-1">Total Products</p>
+          </div>
+
+          {/* Inventory Value */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:scale-105 hover:border-emerald-200 transition-all duration-300 border border-slate-100 cursor-pointer group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                <svg
+                  className="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
             </div>
+            <h3 className="text-2xl font-bold text-slate-800 group-hover:text-emerald-600 transition-colors duration-200">
+              ${(kpiData.totalValue / 1000).toFixed(1)}K
+            </h3>
+            <p className="text-sm text-slate-600 mt-1">Inventory Value</p>
           </div>
 
-          {/* Low Stock Items */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 border-l-4 border-yellow-500 hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-500 text-sm font-semibold uppercase">Low Stock Items</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2 group-hover:text-yellow-600 transition-colors duration-300">{kpiData.lowStock}</p>
-                <p className="text-xs text-red-600 mt-1 animate-pulse">{kpiData.outOfStock} out of stock</p>
+          {/* Low Stock */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:scale-105 hover:border-amber-200 transition-all duration-300 border border-slate-100 cursor-pointer group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                <svg
+                  className="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-full group-hover:bg-yellow-200 group-hover:scale-110 group-hover:animate-bounce transition-all duration-300">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <span className="text-xs font-medium text-rose-600 bg-rose-50 px-2 py-1 rounded-full group-hover:bg-rose-100 transition-colors duration-200">
+                {kpiData.outOfStock} critical
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 group-hover:text-amber-600 transition-colors duration-200">
+              {kpiData.lowStock}
+            </h3>
+            <p className="text-sm text-slate-600 mt-1">Low Stock Items</p>
+          </div>
+
+          {/* Pending */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:scale-105 hover:border-purple-200 transition-all duration-300 border border-slate-100 cursor-pointer group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                <svg
+                  className="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
             </div>
-          </div>
-
-          {/* Pending Receipts */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 border-l-4 border-green-500 hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-500 text-sm font-semibold uppercase">Pending Receipts</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2 group-hover:text-green-600 transition-colors duration-300">{kpiData.pendingReceipts}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full group-hover:bg-green-200 group-hover:scale-110 transition-all duration-300">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Pending Deliveries */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 border-l-4 border-purple-500 hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-500 text-sm font-semibold uppercase">Pending Deliveries</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2 group-hover:text-purple-600 transition-colors duration-300">{kpiData.pendingDeliveries}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-full group-hover:bg-purple-200 group-hover:scale-110 transition-all duration-300">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Internal Transfers */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 border-l-4 border-indigo-500 hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-500 text-sm font-semibold uppercase">Internal Transfers</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{kpiData.internalTransfers}</p>
-              </div>
-              <div className="bg-indigo-100 p-3 rounded-full group-hover:bg-indigo-200 group-hover:scale-110 transition-all duration-300">
-                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Action Card */}
-          <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-md p-6 text-white hover:shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="relative z-10">
-              <p className="text-sm font-semibold uppercase opacity-90">Quick Actions</p>
-              <div className="mt-4 space-y-2">
-                <Link to="/receipts/create" className="block bg-white/20 hover:bg-white/40 rounded px-3 py-2 text-sm transition-all duration-300 hover:translate-x-2">
-                  + New Receipt
-                </Link>
-                <Link to="/deliveries/create" className="block bg-white/20 hover:bg-white/40 rounded px-3 py-2 text-sm transition-all duration-300 hover:translate-x-2">
-                  + New Delivery
-                </Link>
-              </div>
-            </div>
+            <h3 className="text-2xl font-bold text-slate-800 group-hover:text-purple-600 transition-colors duration-200">
+              {kpiData.pendingReceipts + kpiData.pendingDeliveries}
+            </h3>
+            <p className="text-sm text-slate-600 mt-1">Pending Actions</p>
           </div>
         </div>
 
-        {/* Two Column Layout */}
+        {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activities */}
-          <div className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-800">Recent Activities</h3>
-              
-              {/* Filters */}
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setActiveFilter("all")}
-                  className={`px-3 py-1 rounded text-sm transition-all duration-300 ${
-                    activeFilter === "all" 
-                      ? "bg-blue-600 text-white shadow-lg scale-105" 
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105"
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  onClick={() => setActiveFilter("receipts")}
-                  className={`px-3 py-1 rounded text-sm transition-all duration-300 ${
-                    activeFilter === "receipts" 
-                      ? "bg-blue-600 text-white shadow-lg scale-105" 
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105"
-                  }`}
-                >
-                  Receipts
-                </button>
-                <button
-                  onClick={() => setActiveFilter("deliveries")}
-                  className={`px-3 py-1 rounded text-sm transition-all duration-300 ${
-                    activeFilter === "deliveries" 
-                      ? "bg-blue-600 text-white shadow-lg scale-105" 
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105"
-                  }`}
-                >
-                  Deliveries
-                </button>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Document</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warehouse</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {recentActivities.map((activity) => (
-                    <tr key={activity.id} className="hover:bg-blue-50 transition-colors duration-200 cursor-pointer group">
-                      <td className="px-4 py-3 text-sm text-gray-800 group-hover:text-blue-600 transition-colors duration-200">{activity.type}</td>
-                      <td className="px-4 py-3 text-sm font-mono text-blue-600 group-hover:font-bold transition-all duration-200">{activity.doc}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold transition-all duration-200 group-hover:scale-110 inline-block ${getStatusColor(activity.status)}`}>
-                          {activity.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 group-hover:text-gray-800 transition-colors duration-200">{activity.date}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 group-hover:text-gray-800 transition-colors duration-200">{activity.warehouse}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Low Stock Alert */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Low Stock Alert</h3>
-            <div className="space-y-4">
-              {lowStockProducts.map((product) => (
-                <div key={product.id} className="border-l-4 border-red-500 bg-red-50 p-4 rounded hover:bg-red-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer group">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="font-semibold text-gray-800 group-hover:text-red-700 transition-colors duration-200">{product.name}</p>
-                      <p className="text-xs text-gray-500">SKU: {product.sku}</p>
-                    </div>
-                    <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded group-hover:bg-red-200 group-hover:scale-110 transition-all duration-200 animate-pulse">
-                      {product.stock} units
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-600">
-                    <span>Reorder: {product.reorderPoint}</span>
-                    <span className="text-gray-500">{product.category}</span>
+          {/* Recent Activities - Takes 2 columns */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100 overflow-hidden">
+              <div className="p-6 border-b border-slate-100">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-slate-800">Recent Activities</h2>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setActiveFilter("all")}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 transform hover:scale-110 ${
+                        activeFilter === "all"
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setActiveFilter("receipts")}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 transform hover:scale-110 ${
+                        activeFilter === "receipts"
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      Receipts
+                    </button>
+                    <button
+                      onClick={() => setActiveFilter("deliveries")}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 transform hover:scale-110 ${
+                        activeFilter === "deliveries"
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      Deliveries
+                    </button>
                   </div>
                 </div>
-              ))}
-              <Link to="/products" className="block text-center text-blue-600 hover:text-blue-700 font-semibold text-sm mt-4 hover:scale-105 transition-all duration-200">
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Activity
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Document
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {recentActivities.map((activity) => (
+                      <tr
+                        key={activity.id}
+                        className="hover:bg-blue-50 hover:shadow-md hover:scale-x-105 transition-all duration-150 cursor-pointer group"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="text-sm font-medium text-slate-800 group-hover:text-blue-600 transition-colors duration-150">
+                              {activity.type}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-mono text-blue-600 group-hover:text-blue-700 group-hover:font-bold transition-all duration-150">
+                            {activity.doc}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-slate-600 group-hover:text-slate-800 transition-colors duration-150">
+                            {activity.user}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border transition-all duration-150 group-hover:shadow-md ${getStatusColor(activity.status)}`}
+                          >
+                            {activity.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 group-hover:text-slate-800 transition-colors duration-150">
+                          {activity.date}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Low Stock Alert - Takes 1 column */}
+          <div className="space-y-6">
+            {/* Low Stock */}
+            <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-slate-800">Low Stock Alert</h2>
+                <span className="w-8 h-8 bg-rose-100 hover:bg-rose-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                  <svg className="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {lowStockProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="p-4 bg-gradient-to-r from-rose-50 to-orange-50 rounded-xl border border-rose-100 hover:shadow-lg hover:scale-105 hover:border-rose-300 transition-all duration-200 cursor-pointer group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-slate-800 group-hover:text-rose-700 group-hover:scale-105 transition-all duration-200">
+                          {product.name}
+                        </h4>
+                        <p className="text-xs text-slate-600 mt-0.5 group-hover:text-slate-700 transition-colors duration-200">
+                          SKU: {product.sku}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-rose-600 group-hover:text-rose-700 group-hover:scale-110 transition-all duration-200">
+                          {product.stock}
+                        </div>
+                        <div className="text-xs text-slate-600">units left</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-600">Reorder at: {product.reorderPoint}</span>
+                      <span className="px-2 py-1 bg-white rounded-full text-slate-700 font-medium group-hover:bg-rose-100 transition-colors duration-200">
+                        {product.category}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                to="/products"
+                className="mt-4 block text-center py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:scale-105"
+              >
                 View All Products →
               </Link>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg hover:shadow-2xl p-6 text-white transition-all duration-300 hover:scale-105">
+              <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
+              <div className="space-y-2">
+                <Link
+                  to="/receipts/create"
+                  className="flex items-center justify-between p-3 bg-white/20 hover:bg-white/40 rounded-xl transition-all duration-200 group hover:scale-110 origin-left"
+                >
+                  <span className="font-medium group-hover:translate-x-1 transition-transform duration-200">
+                    New Receipt
+                  </span>
+                  <svg
+                    className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  to="/deliveries/create"
+                  className="flex items-center justify-between p-3 bg-white/20 hover:bg-white/40 rounded-xl transition-all duration-200 group hover:scale-110 origin-left"
+                >
+                  <span className="font-medium group-hover:translate-x-1 transition-transform duration-200">
+                    New Delivery
+                  </span>
+                  <svg
+                    className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  to="/transfers/create"
+                  className="flex items-center justify-between p-3 bg-white/20 hover:bg-white/40 rounded-xl transition-all duration-200 group hover:scale-110 origin-left"
+                >
+                  <span className="font-medium group-hover:translate-x-1 transition-transform duration-200">
+                    New Transfer
+                  </span>
+                  <svg
+                    className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default Dashboard;
+export default Dashboard
