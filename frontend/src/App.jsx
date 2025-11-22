@@ -6,6 +6,7 @@ import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import VerifyOtp from "./pages/auth/VerifyOtp";
 import ResetPassword from "./pages/auth/ResetPassword";
+import Landing from "./pages/auth/Landing";
 
 // Dashboard
 import Dashboard from "./pages/Dashboard";
@@ -41,7 +42,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Authentication */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
