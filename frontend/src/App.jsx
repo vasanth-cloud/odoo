@@ -7,9 +7,13 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import VerifyOtp from "./pages/auth/VerifyOtp";
 import ResetPassword from "./pages/auth/ResetPassword";
 import Landing from "./pages/auth/Landing";
+import Profile from "./pages/Profile"
+import Settings from "./pages/Settings";
 
 // Dashboard
 import Dashboard from "./pages/Dashboard";
+
+
 
 // Products
 import ProductList from "./pages/products/ProductList";
@@ -43,6 +47,8 @@ function App() {
       <Routes>
         {/* Authentication */}
         <Route path="/" element={<Landing />} />
+        <Route path="/profile" element={<Profile />} />\
+        <Route path="/settings" element={<Settings />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
