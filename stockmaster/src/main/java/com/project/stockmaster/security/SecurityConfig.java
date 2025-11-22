@@ -38,6 +38,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/warehouses/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/warehouses/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/warehouses/**").hasAnyRole("MANAGER", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/receipts/**").hasAnyRole("MANAGER","STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/receipts/**").hasAnyRole("MANAGER","STAFF")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
