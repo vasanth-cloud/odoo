@@ -1,31 +1,41 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-function CreateReceipt() {
+function CreateTransfer() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   
   const [formData, setFormData] = useState({
-    receiptNumber: "",
-    receiptDate: "",
-    supplier: "",
-    referenceNumber: "",
+    transferNumber: "",
+    transferDate: "",
+    fromLocation: "",
+    toLocation: "",
     status: "DRAFT",
     notes: ""
   });
 
   const [items, setItems] = useState([
-    { productId: "", quantity: "", unitPrice: "" }
+    { productId: "", quantity: "" }
   ]);
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const statusOptions = ["DRAFT", "PENDING", "APPROVED", "RECEIVED", "CANCELLED"];
+  const locations = [
+    "Warehouse A",
+    "Warehouse B",
+    "Warehouse C",
+    "Production Floor",
+    "Storage Unit 1",
+    "Storage Unit 2",
+    "Retail Store"
+  ];
+
+  const statusOptions = ["DRAFT", "PENDING", "APPROVED", "IN_TRANSIT", "COMPLETED", "CANCELLED"];
 
   useEffect(() => {
     loadProducts();
-    generateReceiptNumber();
+    generateTransferNumber();
   }, []);
 
   const loadProducts = async () => {
@@ -44,25 +54,25 @@ function CreateReceipt() {
     }
   };
 
-  const generateReceiptNumber = async () => {
+  const generateTransferNumber = async () => {
     try {
-      const response = await fetch('http://your-backend-url/api/receipts', {
+      const response = await fetch('http://your-backend-url/api/transfers', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
       if (response.ok) {
-        const receipts = await response.json();
-        const nextNumber = receipts.length + 1;
+        const transfers = await response.json();
+        const nextNumber = transfers.length + 1;
         setFormData(prev => ({
           ...prev,
-          receiptNumber: `REC-${String(nextNumber).padStart(3, '0')}`
+          transferNumber: `TRF-${String(nextNumber).padStart(3, '0')}`
         }));
       }
     } catch (error) {
       setFormData(prev => ({
         ...prev,
-        receiptNumber: 'REC-001'
+        transferNumber: 'TRF-001'
       }));
     }
   };
@@ -81,7 +91,7 @@ function CreateReceipt() {
   };
 
   const addItem = () => {
-    setItems([...items, { productId: "", quantity: "", unitPrice: "" }]);
+    setItems([...items, { productId: "", quantity: "" }]);
   };
 
   const removeItem = (index) => {
@@ -93,11 +103,15 @@ function CreateReceipt() {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.receiptNumber) newErrors.receiptNumber = "Receipt number is required";
-    if (!formData.receiptDate) newErrors.receiptDate = "Receipt date is required";
-    if (!formData.supplier.trim()) newErrors.supplier = "Supplier is required";
+    if (!formData.transferNumber) newErrors.transferNumber = "Transfer number is required";
+    if (!formData.transferDate) newErrors.transferDate = "Transfer date is required";
+    if (!formData.fromLocation) newErrors.fromLocation = "From location is required";
+    if (!formData.toLocation) newErrors.toLocation = "To location is required";
+    if (formData.fromLocation === formData.toLocation) {
+      newErrors.toLocation = "To location must be different from From location";
+    }
     
-    const hasEmptyItems = items.some(item => !item.productId || !item.quantity || !item.unitPrice);
+    const hasEmptyItems = items.some(item => !item.productId || !item.quantity);
     if (hasEmptyItems) newErrors.items = "All item fields must be filled";
 
     setErrors(newErrors);
@@ -115,41 +129,39 @@ function CreateReceipt() {
     setIsSubmitting(true);
 
     // Prepare data in exact backend format
-    const receiptData = {
-      receiptNumber: formData.receiptNumber,
-      receiptDate: new Date(formData.receiptDate).toISOString(),
-      supplier: formData.supplier,
-      referenceNumber: formData.referenceNumber,
+    const transferData = {
+      transferNumber: formData.transferNumber,
+      transferDate: new Date(formData.transferDate).toISOString(),
+      fromLocation: formData.fromLocation,
+      toLocation: formData.toLocation,
       status: formData.status,
       notes: formData.notes,
       items: items.map(item => ({
         productId: parseInt(item.productId),
-        quantity: parseInt(item.quantity),
-        unitPrice: parseFloat(item.unitPrice)
+        quantity: parseInt(item.quantity)
       }))
     };
 
     try {
-      const response = await fetch('http://your-backend-url/api/receipts', {
+      const response = await fetch('http://your-backend-url/api/transfers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(receiptData)
+        body: JSON.stringify(transferData)
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create receipt');
+        throw new Error('Failed to create transfer');
       }
 
-      const result = await response.json();
-      alert("Receipt created successfully!");
-      navigate("/receipts");
+      alert("Transfer created successfully!");
+      navigate("/transfers");
       
     } catch (error) {
-      console.error("Error creating receipt:", error);
-      alert("Error creating receipt. Please try again.");
+      console.error("Error creating transfer:", error);
+      alert("Error creating transfer. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -159,71 +171,78 @@ function CreateReceipt() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold">Create New Receipt</h1>
+          <h1 className="text-2xl font-bold">Create Internal Transfer</h1>
+          <p className="text-gray-600 text-sm">Move stock between warehouses or locations</p>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Receipt Information */}
+            {/* Transfer Information */}
             <div>
-              <h3 className="text-lg font-semibold mb-4">Receipt Information</h3>
+              <h3 className="text-lg font-semibold mb-4">Transfer Information</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-700 mb-1">Receipt Number *</label>
+                  <label className="block text-gray-700 mb-1">Transfer Number *</label>
                   <input
                     type="text"
-                    name="receiptNumber"
-                    value={formData.receiptNumber}
+                    name="transferNumber"
+                    value={formData.transferNumber}
                     onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300 bg-gray-50 ${
-                      errors.receiptNumber ? 'border-red-500' : ''
-                    }`}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300 bg-gray-50"
                     readOnly
                   />
-                  {errors.receiptNumber && <p className="text-red-500 text-sm mt-1">{errors.receiptNumber}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-1">Receipt Date *</label>
+                  <label className="block text-gray-700 mb-1">Transfer Date *</label>
                   <input
                     type="datetime-local"
-                    name="receiptDate"
-                    value={formData.receiptDate}
+                    name="transferDate"
+                    value={formData.transferDate}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300 ${
-                      errors.receiptDate ? 'border-red-500' : ''
+                      errors.transferDate ? 'border-red-500' : ''
                     }`}
                   />
-                  {errors.receiptDate && <p className="text-red-500 text-sm mt-1">{errors.receiptDate}</p>}
+                  {errors.transferDate && <p className="text-red-500 text-sm mt-1">{errors.transferDate}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-1">Supplier *</label>
-                  <input
-                    type="text"
-                    name="supplier"
-                    value={formData.supplier}
+                  <label className="block text-gray-700 mb-1">From Location *</label>
+                  <select
+                    name="fromLocation"
+                    value={formData.fromLocation}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300 ${
-                      errors.supplier ? 'border-red-500' : ''
+                      errors.fromLocation ? 'border-red-500' : ''
                     }`}
-                    placeholder="Enter supplier name"
-                  />
-                  {errors.supplier && <p className="text-red-500 text-sm mt-1">{errors.supplier}</p>}
+                  >
+                    <option value="">Select Source Location</option>
+                    {locations.map((loc) => (
+                      <option key={loc} value={loc}>{loc}</option>
+                    ))}
+                  </select>
+                  {errors.fromLocation && <p className="text-red-500 text-sm mt-1">{errors.fromLocation}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-1">Reference Number</label>
-                  <input
-                    type="text"
-                    name="referenceNumber"
-                    value={formData.referenceNumber}
+                  <label className="block text-gray-700 mb-1">To Location *</label>
+                  <select
+                    name="toLocation"
+                    value={formData.toLocation}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                    placeholder="Optional reference"
-                  />
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300 ${
+                      errors.toLocation ? 'border-red-500' : ''
+                    }`}
+                  >
+                    <option value="">Select Destination Location</option>
+                    {locations.map((loc) => (
+                      <option key={loc} value={loc}>{loc}</option>
+                    ))}
+                  </select>
+                  {errors.toLocation && <p className="text-red-500 text-sm mt-1">{errors.toLocation}</p>}
                 </div>
 
                 <div>
@@ -245,7 +264,7 @@ function CreateReceipt() {
             {/* Items */}
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Items</h3>
+                <h3 className="text-lg font-semibold">Items to Transfer</h3>
                 <button
                   type="button"
                   onClick={addItem}
@@ -260,7 +279,7 @@ function CreateReceipt() {
               <div className="space-y-3">
                 {items.map((item, index) => (
                   <div key={index} className="grid grid-cols-12 gap-3 items-end bg-gray-50 p-3 rounded">
-                    <div className="col-span-5">
+                    <div className="col-span-9">
                       <label className="block text-gray-700 text-sm mb-1">Product *</label>
                       <select
                         value={item.productId}
@@ -270,7 +289,7 @@ function CreateReceipt() {
                         <option value="">Select Product</option>
                         {products.map(product => (
                           <option key={product.id} value={product.id}>
-                            {product.code} - {product.name}
+                            {product.code} - {product.name} (Available: {product.quantity})
                           </option>
                         ))}
                       </select>
@@ -284,28 +303,7 @@ function CreateReceipt() {
                         onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                         min="1"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-gray-700 text-sm mb-1">Unit Price *</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={item.unitPrice}
-                        onChange={(e) => handleItemChange(index, "unitPrice", e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                        min="0"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-gray-700 text-sm mb-1">Total</label>
-                      <input
-                        type="text"
-                        value={`$${((item.quantity || 0) * (item.unitPrice || 0)).toFixed(2)}`}
-                        readOnly
-                        className="w-full px-4 py-2 border rounded-lg bg-gray-100 font-semibold"
+                        placeholder="0"
                       />
                     </div>
 
@@ -345,10 +343,10 @@ function CreateReceipt() {
                 disabled={isSubmitting}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-400"
               >
-                {isSubmitting ? "Creating..." : "Create Receipt"}
+                {isSubmitting ? "Creating..." : "Create Transfer"}
               </button>
               <Link
-                to="/receipts"
+                to="/transfers"
                 className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400"
               >
                 Cancel
@@ -361,16 +359,15 @@ function CreateReceipt() {
             <p className="text-sm font-semibold text-gray-700 mb-2">API Payload Preview:</p>
             <pre className="text-xs bg-gray-800 text-green-400 p-3 rounded overflow-x-auto">
 {JSON.stringify({
-  receiptNumber: formData.receiptNumber,
-  receiptDate: formData.receiptDate ? new Date(formData.receiptDate).toISOString() : "",
-  supplier: formData.supplier,
-  referenceNumber: formData.referenceNumber,
+  transferNumber: formData.transferNumber,
+  transferDate: formData.transferDate ? new Date(formData.transferDate).toISOString() : "",
+  fromLocation: formData.fromLocation,
+  toLocation: formData.toLocation,
   status: formData.status,
   notes: formData.notes,
   items: items.map(item => ({
     productId: parseInt(item.productId) || 0,
-    quantity: parseInt(item.quantity) || 0,
-    unitPrice: parseFloat(item.unitPrice) || 0
+    quantity: parseInt(item.quantity) || 0
   }))
 }, null, 2)}
             </pre>
@@ -381,4 +378,4 @@ function CreateReceipt() {
   );
 }
 
-export default CreateReceipt;
+export default CreateTransfer;
